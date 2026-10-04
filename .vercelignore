@@ -1,0 +1,15 @@
+.env
+.env.local
+dev.log
+server.log
+tool-results
+tests
+upload
+download
+examples
+Caddyfile
+.zscripts
+mini-services
+worklog.md
+push-to-github.sh
+agent-ctx
