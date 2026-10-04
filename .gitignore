@@ -57,6 +57,7 @@ server.log
 tool-results/
 .zscripts/dev.pid
 /db/*.db
+!/db/custom.db
 *.db-journal
 agent-ctx/
 push-to-github.sh

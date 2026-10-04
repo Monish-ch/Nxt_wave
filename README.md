@@ -213,11 +213,25 @@ Useful scripts: `bun run lint`, `bunx tsc --noEmit`, `bun run db:push`.
 
 ## 11. Deployment to Vercel
 
-1. Push to GitHub → import into Vercel (framework auto-detected)
-2. Provision Supabase → run `supabase/schema.sql` in the SQL editor (or set `DATABASE_URL` to the Postgres pooler string and run `prisma db push`)
-3. Set env vars in Vercel: `DATABASE_URL`, `ADMIN_PASSWORD`, `NEXT_PUBLIC_DEMO_MODE=false`, optional Supabase keys
-4. Deploy — no server functions beyond the App Router defaults; everything is standard `next` runtime
-5. **Security**: the service-role key stays server-side; admin routes are gated by middleware + HMAC cookie; the API re-verifies the session independently of the middleware
+### Option A — instant demo deploy (zero config) ⚡
+
+The repo ships a pre-seeded demo database (`db/custom.db`). Vercel needs **no environment variables at all**:
+
+1. Push to GitHub → [vercel.com/new](https://vercel.com/new) → **Import** the repo
+2. Click **Deploy** (framework auto-detected, nothing to fill in)
+
+At runtime with no `DATABASE_URL`, `lib/db.ts` materialises the bundled seeded SQLite file into `/tmp` and the whole product works — landing, registration, referral dashboard, leaderboard, admin console (`12345`). Serverless caveat: each lambda instance gets its own `/tmp` copy, so demo registrations are per-instance and reset on cold starts — perfectly fine for a demo, never for real campaigns.
+
+### Option B — production (real registrations) 🚀
+
+1. Create a free Supabase project → SQL editor → run `supabase/schema.sql` (or set `DATABASE_URL` to the Postgres pooler string and run `prisma db push` against it)
+2. Import the repo on Vercel and set env vars:
+   - `DATABASE_URL` — Supabase Postgres connection string (session pooler, port 5432)
+   - `ADMIN_PASSWORD` — a real password
+   - `NEXT_PUBLIC_DEMO_MODE=false`
+3. Deploy. The same Prisma schema serves both SQLite (demo) and Postgres (production) — production is a config change, not a rewrite.
+
+**Security**: the service-role key stays server-side; admin routes are gated by the proxy (Next 16 middleware convention) + HMAC cookie; the API re-verifies the session independently of the middleware.
 
 ## 12. Design Decisions
 
