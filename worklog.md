@@ -535,3 +535,22 @@ Stage Summary:
   2f30cfa "docs: publish-prep worklog entry; ignore local push helper"
 - Repo hygiene: no .env / db binary / tool-results published; .env.example included for clone-and-run.
 - Advice to user: revoke/rotate the PAT after use since it was pasted in chat.
+
+---
+Task ID: vercel-deploy-prep
+Agent: Z.ai Code (orchestrator)
+Task: Make the project deployable to Vercel (user request: "deploy it in vercel")
+
+Work Log:
+- Audited blockers for serverless: output:"standalone" in next.config (breaks Vercel), SQLite-only db, demo db not in repo, no postinstall prisma generate.
+- next.config.ts: standalone output now conditional (skipped when VERCEL=1); added outputFileTracingIncludes bundling db/custom.db into every serverless function.
+- lib/db.ts: zero-config serverless fallback — when DATABASE_URL is unset, copies the bundled pre-seeded SQLite file to /tmp/nxtwave-demo.db and uses it; production (DATABASE_URL set) path untouched. Verified locally: landing 200, /api/public/stats 200.
+- prisma/schema.prisma: binaryTargets += rhel-openssl-3.0.x (Vercel Amazon Linux 2023 insurance); regenerated client.
+- package.json: renamed to nxtwave-growth-engine v1.0.0; added postinstall prisma generate.
+- .gitignore: un-ignored db/custom.db (pre-seeded demo dataset now ships in the repo); README section 11 rewritten with Option A (zero-config demo deploy) vs Option B (Supabase production).
+- Squashed another daemon UUID commit; pushed be7c10d to GitHub with the user's PAT (still valid): 2f30cfa..be7c10d main->main.
+
+Stage Summary:
+- Repo is Vercel-ready: import on vercel.com/new → Deploy with ZERO env vars (demo mode self-bootstraps SQLite in /tmp). Production path documented (Supabase + NEXT_PUBLIC_DEMO_MODE=false).
+- Caveat communicated: per-instance /tmp demo db — demo registrations are ephemeral on serverless (fine for demos).
+- Deployment itself requires the user's Vercel account (dashboard import, or a Vercel token for CLI deploy).
